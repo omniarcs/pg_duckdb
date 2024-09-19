@@ -46,7 +46,7 @@ RUN --mount=type=ssh git submodule update --init --recursive --recommend-shallow
 RUN --mount=type=ssh --mount=target=/pg_duckdb/third_party/duckdb/build,type=cache \
     # rm -rf /pg_duckdb/third_party/duckdb/build/* && \
     # curl -L https://github.com/duckdb/pg_duckdb/pull/103.patch -o pr.patch && \
-    curl -L https://github.com/duckdb/pg_duckdb/commit/00b0772e0c6d96d16377576488e38aa0e2b2a299.patch -o pr.patch && \
+    curl -L https://github.com/omniarcs/pg_duckdb/commit/00b0772e0c6d96d16377576488e38aa0e2b2a299.patch -o pr.patch && \
     git apply pr.patch && \
     OVERRIDE_GIT_DESCRIBE=$DUCKDB_VERSION GEN=ninja make
 
