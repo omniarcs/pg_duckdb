@@ -11,6 +11,7 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     build-essential \
     ca-certificates \
     cmake \
+    curl \
     flex \
     g++ \
     gfortran \
@@ -44,6 +45,9 @@ RUN --mount=type=ssh git submodule update --init --recursive --recommend-shallow
 
 RUN --mount=type=ssh --mount=target=/pg_duckdb/third_party/duckdb/build,type=cache \
     # rm -rf /pg_duckdb/third_party/duckdb/build/* && \
+    # curl -L https://github.com/duckdb/pg_duckdb/pull/103.patch -o pr.patch && \
+    curl -L https://github.com/duckdb/pg_duckdb/commit/00b0772e0c6d96d16377576488e38aa0e2b2a299.patch -o pr.patch && \
+    git apply pr.patch && \
     OVERRIDE_GIT_DESCRIBE=$DUCKDB_VERSION GEN=ninja make
 
 FROM postgres:$PG_MAJOR AS postgres
@@ -54,6 +58,17 @@ RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
     make \
     ca-certificates
+
+# RUN --mount=target=/var/lib/apt/lists,type=cache,sharing=locked \
+#     --mount=target=/var/cache/apt,type=cache,sharing=locked \
+#     apt-get -f -y --no-install-recommends install curl apt-transport-https lsb-release gnupg python3-pip && \
+#     curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.asc.gpg && \
+#     CLI_REPO=$(lsb_release -cs) && \
+#     echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ ${CLI_REPO} main" \
+#     > /etc/apt/sources.list.d/azure-cli.list && \
+#     apt-get update && \
+#     apt-get install -y azure-cli && \
+#     rm -rf /var/lib/apt/lists/*
 
 COPY ./Makefile.install /tmp/Makefile
 RUN --mount=type=bind,from=pg_duckdb,source=/pg_duckdb,target=/pg_duckdb,rw \
